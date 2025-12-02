@@ -1,5 +1,10 @@
 /* SID Doc to Book Frontend Styles */
 
+/* ============================================
+   FONT IMPORTS - Arabic & Urdu Google Fonts
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap');
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -12,6 +17,59 @@
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #fff;
+}
+
+/* ============================================
+   LANGUAGE-SPECIFIC FONT FAMILIES
+   ============================================ */
+
+/* Urdu Language - Nastaliq style font */
+.sdtb-book-container[data-language="urdu"],
+[dir="rtl"].sdtb-book-container[data-language="urdu"] {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif;
+}
+
+.sdtb-book-container[data-language="urdu"] .sdtb-page-content {
+    font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif;
+    font-size: 1.3em;
+    line-height: 2.2;
+    letter-spacing: 0;
+    word-spacing: 2px;
+}
+
+/* Arabic Language - Naskh style font (proper Arabic, not Urdu) */
+.sdtb-book-container[data-language="arabic"],
+[dir="rtl"].sdtb-book-container[data-language="arabic"] {
+    font-family: 'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', 'Traditional Arabic', serif;
+}
+
+.sdtb-book-container[data-language="arabic"] .sdtb-page-content {
+    font-family: 'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', 'Traditional Arabic', serif;
+    font-size: 1.4em;
+    line-height: 2.0;
+    letter-spacing: 0;
+    word-spacing: 1px;
+}
+
+/* Mixed Language (Arabic + Urdu) */
+.sdtb-book-container[data-language="mixed"],
+[dir="rtl"].sdtb-book-container[data-language="mixed"] {
+    font-family: 'Noto Naskh Arabic', 'Amiri', 'Noto Nastaliq Urdu', serif;
+}
+
+.sdtb-book-container[data-language="mixed"] .sdtb-page-content {
+    font-family: 'Noto Naskh Arabic', 'Amiri', 'Noto Nastaliq Urdu', serif;
+    font-size: 1.3em;
+    line-height: 2.0;
+}
+
+/* Prevent letter collision/overlap in RTL text */
+[dir="rtl"] .sdtb-page-content {
+    text-rendering: optimizeLegibility;
+    -webkit-font-feature-settings: "kern" 1, "liga" 1;
+    font-feature-settings: "kern" 1, "liga" 1;
+    word-break: normal;
+    overflow-wrap: break-word;
 }
 
 /* Book Header */
@@ -536,4 +594,100 @@
     .sdtb-copy-selection {
         width: 100%;
     }
+}
+
+/* ============================================
+   SEARCH HIGHLIGHT STYLES
+   ============================================ */
+
+/* Highlight matched text in page content */
+.sdtb-search-highlight {
+    background-color: #ffeb3b;
+    color: #000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Pulse animation for first match */
+.sdtb-highlight-pulse {
+    animation: sdtb-pulse 1s ease-in-out 2;
+}
+
+@keyframes sdtb-pulse {
+    0%, 100% {
+        background-color: #ffeb3b;
+        transform: scale(1);
+    }
+    50% {
+        background-color: #ff9800;
+        transform: scale(1.05);
+    }
+}
+
+/* Highlight in search result snippets */
+.sdtb-highlight-snippet {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+/* Search result snippet styling */
+.sdtb-result-snippet {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 5px;
+    line-height: 1.5;
+    max-height: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Current page badge in search results */
+.sdtb-current-badge {
+    background: #28a745;
+    color: white;
+    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+}
+
+/* Highlight current page result */
+.sdtb-current-page-result {
+    background: #e8f5e9 !important;
+    border-color: #28a745 !important;
+}
+
+[dir="rtl"] .sdtb-current-badge {
+    margin-left: 0;
+    margin-right: 8px;
+}
+
+/* ============================================
+   ADDITIONAL RTL IMPROVEMENTS
+   ============================================ */
+
+/* Better text alignment for RTL */
+[dir="rtl"] .sdtb-page-content p,
+[dir="rtl"] .sdtb-page-content div {
+    text-align: right;
+}
+
+[dir="rtl"] .sdtb-page-content {
+    unicode-bidi: plaintext;
+}
+
+/* RTL search box */
+[dir="rtl"] .sdtb-search-input {
+    text-align: right;
+    direction: rtl;
+}
+
+/* RTL result items */
+[dir="rtl"] .sdtb-result-snippet {
+    text-align: right;
+    direction: rtl;
 }

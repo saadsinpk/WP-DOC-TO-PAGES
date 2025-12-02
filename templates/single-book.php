@@ -26,7 +26,7 @@ $is_rtl = in_array($language, ['urdu', 'arabic', 'mixed']);
 
 <main id="main" class="site-main">
     <div class="container">
-        <div class="sdtb-book-container" dir="<?php echo $is_rtl ? 'rtl' : 'ltr'; ?>" data-book-id="<?php echo intval($book_id); ?>">
+        <div class="sdtb-book-container" dir="<?php echo $is_rtl ? 'rtl' : 'ltr'; ?>" data-book-id="<?php echo intval($book_id); ?>" data-language="<?php echo esc_attr($language); ?>">
     <div class="sdtb-book-header">
         <div class="sdtb-book-info">
             <?php if ($book['thumbnail']): ?>

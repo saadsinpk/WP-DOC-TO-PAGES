@@ -8,12 +8,30 @@ class Admin_Page_Editor {
 
     public function __construct() {
         add_action('add_meta_boxes', [$this, 'add_page_editor_meta_box']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_fonts']);
         add_action('wp_ajax_sdtb_get_page_list', [$this, 'ajax_get_page_list']);
         add_action('wp_ajax_sdtb_get_page_content', [$this, 'ajax_get_page_content']);
         add_action('wp_ajax_sdtb_save_page_content', [$this, 'ajax_save_page_content']);
         add_action('wp_ajax_sdtb_delete_page', [$this, 'ajax_delete_page']);
         add_action('wp_ajax_sdtb_create_page', [$this, 'ajax_create_page']);
         add_action('wp_ajax_sdtb_reorder_pages', [$this, 'ajax_reorder_pages']);
+    }
+
+    /**
+     * Enqueue Google Fonts for admin editor
+     */
+    public function enqueue_admin_fonts($hook) {
+        global $post_type;
+
+        // Only load on book edit pages
+        if (($hook === 'post.php' || $hook === 'post-new.php') && $post_type === 'sdtb_book') {
+            wp_enqueue_style(
+                'sdtb-admin-google-fonts',
+                'https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap',
+                [],
+                null
+            );
+        }
     }
 
     /**
@@ -108,16 +126,39 @@ class Admin_Page_Editor {
                                     Page Content
                                 </label>
 
-                                <!-- WordPress TinyMCE Editor -->
+                                <!-- WordPress TinyMCE Editor with Extended Font Controls -->
                                 <?php
+                                // Define font formats for TinyMCE (use single quotes for font names with spaces)
+                                $font_formats = "Arial=Arial, Helvetica, sans-serif;" .
+                                    "Arial Black='Arial Black', Gadget, sans-serif;" .
+                                    "Georgia=Georgia, serif;" .
+                                    "Tahoma=Tahoma, Geneva, sans-serif;" .
+                                    "Times New Roman='Times New Roman', Times, serif;" .
+                                    "Trebuchet MS='Trebuchet MS', Helvetica, sans-serif;" .
+                                    "Verdana=Verdana, Geneva, sans-serif;" .
+                                    "Amiri=Amiri, serif;" .
+                                    "Scheherazade New='Scheherazade New', serif;" .
+                                    "Noto Naskh Arabic='Noto Naskh Arabic', serif;" .
+                                    "Noto Nastaliq Urdu='Noto Nastaliq Urdu', serif;" .
+                                    "Jameel Noori Nastaleeq='Jameel Noori Nastaleeq', serif;" .
+                                    "Segoe UI='Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+                                // Font sizes
+                                $font_sizes = '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 26pt 28pt 36pt 48pt 72pt';
+
                                 wp_editor('', 'sdtb-edit-page-content', [
                                     'textarea_name' => 'sdtb_page_content',
                                     'editor_class' => 'sdtb-page-editor',
                                     'media_buttons' => false,
                                     'tinymce' => [
-                                        'toolbar1' => 'bold,italic,underline,strikethrough,|,bullist,numlist,blockquote,|,link,unlink,|,formatselect,removeformat',
-                                        'toolbar2' => 'undo,redo',
-                                        'plugins' => 'lists,link,charmap,paste',
+                                        'toolbar1' => 'fontselect,fontsizeselect,|,bold,italic,underline,strikethrough,|,forecolor,backcolor,|,alignleft,aligncenter,alignright,alignjustify',
+                                        'toolbar2' => 'bullist,numlist,blockquote,|,link,unlink,|,formatselect,removeformat,|,undo,redo',
+                                        'plugins' => 'lists,link,charmap,paste,textcolor',
+                                        'font_formats' => $font_formats,
+                                        'fontsize_formats' => $font_sizes,
+                                        'content_css' => 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap',
+                                        'body_class' => 'sdtb-tinymce-editor',
+                                        'content_style' => "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; direction: rtl; } body.mce-content-body { padding: 10px; }",
                                     ],
                                     'quicktags' => [
                                         'buttons' => 'strong,em,u,li,ol,link'

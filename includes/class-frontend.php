@@ -33,7 +33,15 @@ class Frontend {
      */
     public function enqueue_assets() {
         if (is_singular('sdtb_book') || is_post_type_archive('sdtb_book')) {
-            wp_enqueue_style('sdtb-frontend', SDTB_PLUGIN_URL . 'assets/css/frontend.css', [], SDTB_VERSION);
+            // Load Google Fonts for Arabic and Urdu
+            wp_enqueue_style(
+                'sdtb-google-fonts',
+                'https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap',
+                [],
+                null
+            );
+
+            wp_enqueue_style('sdtb-frontend', SDTB_PLUGIN_URL . 'assets/css/frontend.css', ['sdtb-google-fonts'], SDTB_VERSION);
             wp_enqueue_script('sdtb-frontend', SDTB_PLUGIN_URL . 'assets/js/frontend.js', ['jquery'], SDTB_VERSION, true);
 
             // Localize script with AJAX data
