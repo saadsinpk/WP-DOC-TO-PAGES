@@ -82,7 +82,10 @@ function sdtb_ajax_search() {
     $book_id = intval($_POST['book_id']);
     $search_term = sanitize_text_field($_POST['search_term']);
 
-    if (strlen($search_term) < 2) {
+    // Allow single character for numbers, but require 2 for text
+    // This allows searching for "365" or "Hadith 365"
+    $min_length = 1;
+    if (mb_strlen($search_term, 'UTF-8') < $min_length) {
         wp_send_json_error('Search term too short');
     }
 

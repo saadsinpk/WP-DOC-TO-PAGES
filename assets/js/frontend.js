@@ -12,7 +12,10 @@
         const highlightTerm = urlParams.get('sdtb_highlight');
         if (highlightTerm) {
             currentSearchTerm = decodeURIComponent(highlightTerm);
-            highlightAndScrollToTerm(currentSearchTerm);
+            // Delay to ensure page is fully loaded
+            setTimeout(function() {
+                highlightAndScrollToTerm(currentSearchTerm);
+            }, 300);
         }
 
         // Select all text in page
@@ -25,15 +28,39 @@
             selection.addRange(range);
         });
 
-        // Copy selected text
+        // Copy selected text (using modern Clipboard API with fallback)
         $('.sdtb-copy-selection').on('click', function() {
             const selection = window.getSelection();
             if (selection.toString()) {
-                document.execCommand('copy');
-                alert(sdtbData.copySuccess || 'Text copied to clipboard!');
+                copyToClipboard(selection.toString()).then(function() {
+                    showNotification(sdtbData.copySuccess || 'Text copied to clipboard!', 'success');
+                }).catch(function() {
+                    showNotification('Failed to copy text', 'error');
+                });
             } else {
-                alert(sdtbData.selectText || 'Please select text first');
+                showNotification(sdtbData.selectText || 'Please select text first', 'warning');
             }
+        });
+
+        // Copy Link button
+        $('.sdtb-share-copy').on('click', function() {
+            const url = $(this).data('url');
+            const btn = $(this);
+
+            copyToClipboard(url).then(function() {
+                btn.addClass('copied');
+                showNotification('Link copied to clipboard!', 'success');
+                setTimeout(function() {
+                    btn.removeClass('copied');
+                }, 2000);
+            }).catch(function() {
+                showNotification('Failed to copy link', 'error');
+            });
+        });
+
+        // Print button
+        $('.sdtb-print-btn').on('click', function() {
+            window.print();
         });
 
         // Go to page button
@@ -69,28 +96,32 @@
             const searchTerm = $(this).val().trim();
 
             // Press Enter to search current page first
-            if (e.which === 13 && searchTerm.length >= 2) {
+            if (e.which === 13 && searchTerm.length >= 1) {
                 // First try to find on current page
                 if (highlightAndScrollToTerm(searchTerm)) {
                     currentSearchTerm = searchTerm;
                     return;
                 }
+                // If not found on current page, search all pages
+                performSearch(searchTerm);
+                return;
             }
 
-            if (searchTerm.length < 2) {
+            if (searchTerm.length < 1) {
                 $('#sdtb-search-results').empty();
                 clearHighlights();
                 return;
             }
 
+            // Auto-search after typing (with delay)
             searchTimeout = setTimeout(function() {
                 performSearch(searchTerm);
-            }, 300);
+            }, 500);
         });
 
         $('#sdtb-search-btn').on('click', function() {
             const searchTerm = $('#sdtb-search').val().trim();
-            if (searchTerm.length >= 2) {
+            if (searchTerm.length >= 1) {
                 currentSearchTerm = searchTerm;
                 // First try to highlight on current page
                 highlightAndScrollToTerm(searchTerm);
@@ -219,13 +250,16 @@
 
         // Highlight search term in page content and scroll to first match
         function highlightAndScrollToTerm(searchTerm) {
-            if (!searchTerm || searchTerm.length < 2) return false;
+            if (!searchTerm || searchTerm.length < 1) return false;
 
             // Clear previous highlights
             clearHighlights();
 
             const pageContent = $('.sdtb-page-content');
             if (pageContent.length === 0) return false;
+
+            // Normalize the search term for better matching
+            const normalizedSearchTerm = normalizeArabicText(searchTerm);
 
             // Use TreeWalker to find text nodes
             const walker = document.createTreeWalker(
@@ -245,66 +279,119 @@
 
             let foundMatch = false;
             let firstHighlight = null;
+            let matchCount = 0;
+
+            // Create regex that handles both the original and normalized text
             const regex = new RegExp('(' + escapeRegExp(searchTerm) + ')', 'gi');
+            const normalizedRegex = new RegExp('(' + escapeRegExp(normalizedSearchTerm) + ')', 'gi');
 
             textNodes.forEach(function(textNode) {
                 const text = textNode.nodeValue;
-                if (regex.test(text)) {
-                    // Reset regex lastIndex
+                const normalizedText = normalizeArabicText(text);
+
+                // Try original search first, then normalized
+                let matchRegex = regex;
+                let testText = text;
+
+                if (!regex.test(text)) {
                     regex.lastIndex = 0;
+                    // Try normalized match
+                    if (normalizedRegex.test(normalizedText)) {
+                        normalizedRegex.lastIndex = 0;
+                        matchRegex = normalizedRegex;
+                        testText = normalizedText;
+                    } else {
+                        normalizedRegex.lastIndex = 0;
+                        return; // No match in this node
+                    }
+                }
+                matchRegex.lastIndex = 0;
 
-                    // Create a wrapper span with highlighted content
-                    const fragment = document.createDocumentFragment();
-                    let lastIndex = 0;
-                    let match;
+                // Create a wrapper span with highlighted content
+                const fragment = document.createDocumentFragment();
+                let lastIndex = 0;
+                let match;
 
-                    while ((match = regex.exec(text)) !== null) {
-                        // Add text before match
-                        if (match.index > lastIndex) {
-                            fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
-                        }
-
-                        // Add highlighted match
-                        const mark = document.createElement('mark');
-                        mark.className = 'sdtb-search-highlight';
-                        mark.textContent = match[1];
-                        fragment.appendChild(mark);
-
-                        if (!firstHighlight) {
-                            firstHighlight = mark;
-                        }
-
-                        lastIndex = regex.lastIndex;
-                        foundMatch = true;
+                // Use original text for display, but normalized for matching
+                while ((match = matchRegex.exec(testText)) !== null) {
+                    // Add text before match
+                    if (match.index > lastIndex) {
+                        fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
                     }
 
-                    // Add remaining text
-                    if (lastIndex < text.length) {
-                        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+                    // Add highlighted match (use original text at match position)
+                    const mark = document.createElement('mark');
+                    mark.className = 'sdtb-search-highlight';
+                    mark.setAttribute('data-match-index', matchCount);
+                    mark.textContent = text.substring(match.index, match.index + match[1].length);
+                    fragment.appendChild(mark);
+
+                    if (!firstHighlight) {
+                        firstHighlight = mark;
                     }
 
-                    // Replace the text node with the fragment
+                    lastIndex = match.index + match[1].length;
+                    matchCount++;
+                    foundMatch = true;
+                }
+
+                // Add remaining text
+                if (lastIndex < text.length) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+                }
+
+                // Replace the text node with the fragment
+                if (foundMatch) {
                     textNode.parentNode.replaceChild(fragment, textNode);
                 }
             });
 
-            // Scroll to first highlight
+            // Scroll to first highlight with better visibility
             if (firstHighlight) {
                 setTimeout(function() {
-                    firstHighlight.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
+                    // Get element position
+                    const rect = firstHighlight.getBoundingClientRect();
+                    const absoluteTop = window.pageYOffset + rect.top;
+
+                    // Scroll to position with offset for better visibility
+                    window.scrollTo({
+                        top: absoluteTop - (window.innerHeight / 3),
+                        behavior: 'smooth'
                     });
 
                     // Add a pulse animation to draw attention
                     $(firstHighlight).addClass('sdtb-highlight-pulse');
+
+                    // Show match count notification
+                    if (matchCount > 0) {
+                        showNotification(matchCount + ' match' + (matchCount > 1 ? 'es' : '') + ' found', 'success');
+                    }
+
                     setTimeout(function() {
                         $('.sdtb-search-highlight').removeClass('sdtb-highlight-pulse');
-                    }, 2000);
-                }, 100);
+                    }, 3000);
+                }, 150);
             }
 
             return foundMatch;
+        }
+
+        // Normalize Arabic/Urdu text for better search matching
+        function normalizeArabicText(text) {
+            if (!text) return '';
+            return text
+                // Remove diacritics (tashkeel)
+                .replace(/[\u064B-\u065F\u0670]/g, '')
+                // Normalize alef variations
+                .replace(/[\u0622\u0623\u0625\u0627]/g, '\u0627')
+                // Normalize heh/teh marbuta
+                .replace(/\u0629/g, '\u0647')
+                // Normalize yeh variations
+                .replace(/[\u0649\u064A]/g, '\u064A')
+                // Remove tatweel
+                .replace(/\u0640/g, '')
+                // Trim whitespace
+                .trim();
         }
 
         // Clear all search highlights
@@ -340,6 +427,84 @@
                 $('#sdtb-search-results').empty();
             }
         });
+
+        // Helper function: Copy to clipboard (modern API with fallback)
+        function copyToClipboard(text) {
+            return new Promise(function(resolve, reject) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(resolve).catch(reject);
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            });
+        }
+
+        // Helper function: Show notification toast
+        function showNotification(message, type) {
+            // Remove existing notifications
+            $('.sdtb-notification').remove();
+
+            const bgColors = {
+                success: '#28a745',
+                error: '#dc3545',
+                warning: '#ffc107',
+                info: '#17a2b8'
+            };
+
+            const textColors = {
+                success: '#fff',
+                error: '#fff',
+                warning: '#212529',
+                info: '#fff'
+            };
+
+            const notification = $('<div class="sdtb-notification"></div>')
+                .text(message)
+                .css({
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    padding: '12px 24px',
+                    background: bgColors[type] || bgColors.info,
+                    color: textColors[type] || textColors.info,
+                    borderRadius: '4px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 99999,
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease'
+                });
+
+            $('body').append(notification);
+
+            // Fade in
+            setTimeout(function() {
+                notification.css('opacity', 1);
+            }, 10);
+
+            // Fade out and remove
+            setTimeout(function() {
+                notification.css('opacity', 0);
+                setTimeout(function() {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
     });
 
 })(jQuery);

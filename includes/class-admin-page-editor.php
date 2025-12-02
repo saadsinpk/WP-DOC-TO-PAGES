@@ -112,11 +112,11 @@ class Admin_Page_Editor {
                             <!-- Page Title -->
                             <div style="margin-bottom: 15px;">
                                 <label for="sdtb-edit-page-title" style="display: block; font-weight: bold; margin-bottom: 8px;">
-                                    Page Title (Optional)
+                                    Page Title / Headline (Optional)
                                 </label>
-                                <input type="text" id="sdtb-edit-page-title" placeholder="Enter page title..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                <input type="text" id="sdtb-edit-page-title" placeholder="Enter headline if needed..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
                                 <small style="display: block; margin-top: 4px; color: #666;">
-                                    Leave empty for no title
+                                    Only add a title if you want a headline to appear above the page content. Leave empty for no headline.
                                 </small>
                             </div>
 

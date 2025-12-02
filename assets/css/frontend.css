@@ -691,3 +691,252 @@
     text-align: right;
     direction: rtl;
 }
+
+/* ============================================
+   SHARE & PRINT BUTTONS
+   ============================================ */
+
+.sdtb-share-print-tools {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px 0;
+    margin-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.sdtb-share-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sdtb-share-label {
+    font-weight: bold;
+    color: #666;
+    font-size: 0.95em;
+}
+
+.sdtb-share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.sdtb-share-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.sdtb-share-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* WhatsApp */
+.sdtb-share-whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.sdtb-share-whatsapp:hover {
+    background: #128C7E;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+/* Facebook */
+.sdtb-share-facebook {
+    background: #1877F2;
+    color: white;
+}
+
+.sdtb-share-facebook:hover {
+    background: #0d65d9;
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
+}
+
+/* Twitter/X */
+.sdtb-share-twitter {
+    background: #000000;
+    color: white;
+}
+
+.sdtb-share-twitter:hover {
+    background: #333333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Copy Link */
+.sdtb-share-copy {
+    background: #6c757d;
+    color: white;
+}
+
+.sdtb-share-copy:hover {
+    background: #545b62;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.sdtb-share-copy.copied {
+    background: #28a745;
+}
+
+/* Print Button */
+.sdtb-print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.sdtb-print-btn:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+}
+
+.sdtb-print-btn svg {
+    flex-shrink: 0;
+}
+
+/* RTL Share buttons */
+[dir="rtl"] .sdtb-share-print-tools {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .sdtb-share-buttons {
+    flex-direction: row-reverse;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    /* Hide non-essential elements */
+    .sdtb-book-header,
+    .sdtb-search-box,
+    .sdtb-navigation,
+    .sdtb-page-selection-tools,
+    .sdtb-share-print-tools,
+    .sdtb-nav-buttons,
+    .sdtb-progress,
+    header,
+    footer,
+    nav,
+    .site-header,
+    .site-footer,
+    .sidebar,
+    #wpadminbar {
+        display: none !important;
+    }
+
+    /* Reset container styles */
+    .sdtb-book-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .sdtb-reader {
+        background: white !important;
+        padding: 0 !important;
+        min-height: auto !important;
+    }
+
+    .sdtb-page {
+        box-shadow: none !important;
+        padding: 20px !important;
+        page-break-inside: avoid;
+    }
+
+    .sdtb-page-number {
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .sdtb-page-content {
+        font-size: 12pt !important;
+        line-height: 1.6 !important;
+    }
+
+    /* Ensure proper font for RTL in print */
+    [dir="rtl"] .sdtb-page-content {
+        font-size: 14pt !important;
+        line-height: 2 !important;
+    }
+
+    /* Print header */
+    .sdtb-print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #333;
+    }
+
+    .sdtb-print-header h1 {
+        margin: 0 0 5px 0;
+        font-size: 18pt;
+    }
+
+    .sdtb-print-header p {
+        margin: 0;
+        color: #666;
+    }
+}
+
+/* Hidden print header (only shows in print) */
+.sdtb-print-header {
+    display: none;
+}
+
+/* ============================================
+   RESPONSIVE SHARE BUTTONS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .sdtb-share-print-tools {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sdtb-share-buttons {
+        justify-content: center;
+    }
+
+    .sdtb-print-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .sdtb-share-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .sdtb-share-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+}

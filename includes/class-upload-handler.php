@@ -87,11 +87,13 @@ class Upload_Handler {
         $wpdb->delete($table, ['book_id' => $post_id]);
 
         // Insert pages with SEQUENTIAL numbering (always 1, 2, 3, ...)
-        // Generate titles for all pages based on content
+        // Note: We no longer auto-extract titles from first line
+        // Users can manually set titles in the admin editor if needed
         $page_number = 1;
         foreach ($parsed['pages'] as $page) {
-            // Extract title from page content
-            $page_title = $this->extract_page_title($page['content']);
+            // Don't auto-extract title - leave empty for user to set manually
+            // This prevents the first line from appearing as a headline
+            $page_title = '';
 
             $wpdb->insert($table, [
                 'book_id' => $post_id,
